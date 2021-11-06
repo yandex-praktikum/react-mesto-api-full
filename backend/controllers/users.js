@@ -1,8 +1,8 @@
+const { NODE_ENV, JWT_SECRET } = process.env;
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const {
-  JWT_SECRET,
   SOLT_ROUND,
 } = require('../configs/index');
 const NotFoundError = require('../errors/NotFoundError');
@@ -11,14 +11,14 @@ const AuthenticationFailedError = require('../errors/AuthenticationFailedError')
 const ConflictError = require('../errors/ConflictError');
 
 module.exports.getUsers = (req, res, next) => {
-  User.find({}).then((users) => res.status(200).send({ users }))
+  User.find({}).then((users) => res.status(200).send(users))
     .catch(next);
 };
 
 module.exports.getUserById = (req, res, next) => {
   User.findById(req.params.userId).then((user) => {
     if (user) {
-      return res.status(200).send({ data: user });
+      return res.status(200).send(user);
     }
     throw new NotFoundError('Пользователь с указанным _id не найден.');
   })
@@ -34,7 +34,7 @@ module.exports.getUserById = (req, res, next) => {
 module.exports.getCurrentUser = (req, res, next) => {
   User.findById(req.user._id).then((user) => {
     if (user) {
-      return res.status(200).send({ data: user });
+      return res.status(200).send(user);
     }
     throw new NotFoundError('Пользователь с указанным _id не найден.');
   })
@@ -71,6 +71,7 @@ module.exports.createUser = (req, res, next) => {
 
 module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
+
   if (!email || !password) {
     throw new BadRequestError('Передан невалидные данные');
   }
@@ -82,11 +83,8 @@ module.exports.login = (req, res, next) => {
       if (!matched) {
         throw new AuthenticationFailedError('Неправильные почта или пароль');
       }
-      const token = jwt.sign({ _id: user._id }, JWT_SECRET);
-      res.cookie('jwt', token, {
-        maxAge: 3600000 * 24 * 7,
-        httpOnly: true,
-      }).end();
+      const token = jwt.sign({ _id: user._id }, NODE_ENV === 'production' ? JWT_SECRET : 'Not-so-secret', { expiresIn: '7d' });
+      res.send({ token });
     })
       .catch((err) => {
         next(err);
@@ -107,7 +105,7 @@ module.exports.updateUser = (req, res, next) => {
     })
     .then((user) => {
       if (user) {
-        return res.status(200).send({ data: user._id });
+        return res.status(200).send(user);
       }
       throw new NotFoundError('Пользователь с указанным _id не найден.');
     })
@@ -130,7 +128,7 @@ module.exports.updateUserAvatar = (req, res, next) => {
     })
     .then((user) => {
       if (user) {
-        return res.status(200).send({ data: user._id });
+        return res.status(200).send(user);
       }
       throw new NotFoundError('Пользователь с указанным _id не найден.');
     })

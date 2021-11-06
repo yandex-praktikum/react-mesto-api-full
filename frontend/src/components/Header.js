@@ -1,10 +1,14 @@
 import headerLogo from "../images/header__logo.svg";
 import menuBotton from "../images/menu_button.svg";
 import closeButton from "../images/Close_Icon2.svg";
+import {useContext} from 'react';
 import { Route, Link } from 'react-router-dom';
+import { CurrentUserContext } from "../contexts/CurrentUserContext";
 
-function Нeader({ title, isOpen, onMenuClick, onClose, userData, onSignOut}) {
+function Нeader({ title, isOpen, onMenuClick, onClose, onSignOut}) {
 
+    const currentUser = useContext(CurrentUserContext);
+    
     return(
         <header className="header">
             <Route exact path="/">
@@ -19,23 +23,23 @@ function Нeader({ title, isOpen, onMenuClick, onClose, userData, onSignOut}) {
                         />
                     </div>
                     <div className={`header__container ${isOpen ? "header__container_active" : ""}`}>
-                        <p className="header__user-email">{ userData }</p>
+                        <p className="header__user-email">{ currentUser.email }</p>
                         <button type="button" className="header__button" onClick={onSignOut}>{title}</button>
                     </div>
                 </div>
             </Route>
 
-            <Route exact path="/sign-in">
+            <Route exact path="/signin">
                 <div className="header__mob-menu">
                     <img className="header__logo" src={headerLogo} alt="Место" />
-                    <Link to={"/sign-up"} className="header__link">Регистрация</Link>
+                    <Link to={"/signup"} className="header__link">Регистрация</Link>
                 </div>
             </Route>
 
-            <Route exact path="/sign-up">
+            <Route exact path="/signup">
                 <div className="header__mob-menu">
                     <img className="header__logo" src={headerLogo} alt="Место" />
-                    <Link to={"/sign-in"} className="header__link">Войти</Link>
+                    <Link to={"/signin"} className="header__link">Войти</Link>
                 </div>
             </Route>
         </header>

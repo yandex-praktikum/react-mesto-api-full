@@ -29,13 +29,13 @@ function App() {
     const [selectedCardDelet, setSelectedCardDelete] = useState(null);
     const [currentUser, setCurrentUser] = useState({});
     const [cards, setCards] = useState([]);
-    const [userData, setUserData] = useState("email");
     const [message, setMessage] = useState({ image: "", text: "" });
     const [isInfoTooltipOpen, setInfoTooltipOpen] = useState(false);
     const history = useHistory();
 
 
     useEffect(() => {
+        if (loggedIn) {
         Promise.all([api.getInitialCards(), api.getUserInfoFromServer()])
         .then(([dataCards, dataUser]) => {
             setCards(dataCards);
@@ -44,11 +44,12 @@ function App() {
         .catch((err) => {
             console.log(err);
         });
-    }, []);
+        }
+    }, [loggedIn]);
 
     function handleCardLike(card) {
         const isLiked = card.likes.some((item) => {
-            return item._id === currentUser._id
+            return item === currentUser._id
         });
       
         api.changeLikeCardStatus(card._id, isLiked)
@@ -62,7 +63,7 @@ function App() {
     
     function handleCardDelete(evt) {
         evt.preventDefault();
-        api.handlerdeleteCards(selectedCardDelet._id)
+        api.handlerDeleteCards(selectedCardDelet._id)
         .then(() => {
             setCards(cards => cards.filter((c) => c._id !== selectedCardDelet._id));
             setIsDeletePopupOpen(false);
@@ -80,7 +81,7 @@ function App() {
     function handleAddPlaceSubmit(item) {
         api.postCards(item)
         .then(newCard => {
-            setCards([newCard, ...cards]);
+            setCards([...cards, newCard]);
             closeAllPopups();
         })
         .catch((err) => {
@@ -160,7 +161,6 @@ function App() {
             .then((res) => {
                 if (res) {
                   setLoggedIn(true);
-                  setUserData(res.data.email);
                   history.push('/');
                 }
             })
@@ -187,20 +187,20 @@ function App() {
         });
     }
 
-    const onLogin = ({ password, email }) => {
-        return authUser.authorize( password, email )
-        .then((data) => {
-            if (data.token){
-                setLoggedIn(true);
-                localStorage.setItem('jwt', data.token);
-                history.push('/');
-            } 
-          })
-          .catch((err) => {
-              console.log(err)
-              setMessage({ image: imageError, text: "Что-то пошло не так! Попробуйте ещё раз." });
-              setInfoTooltipOpen(true);
-            })
+    const onLogin = ({ password, email }) => { 
+        return authUser.authorize( password, email ) 
+        .then((data) => { 
+            if (data.token){ 
+                setLoggedIn(true); 
+                localStorage.setItem('jwt', data.token); 
+                history.push('/'); 
+            }  
+          }) 
+        .catch((err) => { 
+            console.log(err) 
+            setMessage({ image: imageError, text: "Что-то пошло не так! Попробуйте ещё раз." }); 
+            setInfoTooltipOpen(true); 
+        }) 
     }
 
     const onSignOut = () => {
@@ -218,10 +218,9 @@ function App() {
                     isOpen={isMenuOpen} 
                     onMenuClick={handleMenuClick}
                     onClose={closeAllPopups} 
-                    userData={userData}
                     onSignOut={onSignOut}
                 /> 
-                : <Redirect to="/sign-up" 
+                : <Redirect to="/signup" 
             />}
 
             </Route>
@@ -230,7 +229,6 @@ function App() {
                     exact
                     path="/"
                     loggedIn={loggedIn}
-                    userData={userData}
                     onEditProfile={handleEditProfileClick} 
                     onAddPlace={handleAddPlaceClick}  
                     onEditAvatar={handleEditAvatarClick} 
@@ -241,12 +239,12 @@ function App() {
                     component={Main} 
                 />     
 
-                <Route exact path="/sign-up">
+                <Route exact path="/signup">
                     <Header />
                     <Register onRegister={onRegister} />
                 </Route>
 
-                <Route exact path="/sign-in">
+                <Route exact path="/signin">
                     <Header />
                     <Login onLogin={onLogin} />
                 </Route>

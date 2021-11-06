@@ -5,19 +5,25 @@ const ForbiddenError = require('../errors/ForbiddenError');
 
 module.exports.getCards = (req, res, next) => {
   Card.find({})
-    .populate('owner')
-    .then((cards) => res.status(200).send({ data: cards }))
+    .then((cards) => res.status(200).send(cards))
     .catch(next);
 };
 
 module.exports.createCards = (req, res, next) => {
-  const ownerId = req.user._id;
-  const { name, link, createdAt } = req.body;
+  const ownerId = req.user;
+  const {
+    name,
+    link,
+    createdAt,
+    likes,
+  } = req.body;
 
   return Card.create({
-    name, link, createdAt, likes: ownerId, owner: ownerId,
+    name, link, createdAt, likes, owner: ownerId,
   })
-    .then((card) => res.status(200).send({ data: card }))
+    .then((card) => {
+      res.status(200).send(card);
+    })
     .catch((err) => {
       if (err.name === 'ValidationError') {
         next(new BadRequestError('Переданы невалидные данные'));
@@ -34,7 +40,7 @@ module.exports.deleteCards = (req, res, next) => {
         next(new ForbiddenError('Попытка удалить чужую карточку'));
       } else {
         Card.deleteOne(card)
-          .then(() => res.status(200).send({ data: card }));
+          .then(() => res.status(200).send(card));
       }
     })
     .catch(next);
@@ -47,7 +53,7 @@ module.exports.likeCard = (req, res, next) => Card.findByIdAndUpdate(
 )
   .then((card) => {
     if (card) {
-      return res.status(200).send({ data: card });
+      return res.status(200).send(card);
     }
     throw new NotFoundError('Карточка с указанным _id не найдена.');
   })
@@ -65,7 +71,7 @@ module.exports.dislikeCard = (req, res, next) => Card.findByIdAndUpdate(
 )
   .then((card) => {
     if (card) {
-      return res.status(200).send({ data: card });
+      return res.status(200).send(card);
     }
     throw new NotFoundError('Карточка с указанным _id не найдена.');
   })

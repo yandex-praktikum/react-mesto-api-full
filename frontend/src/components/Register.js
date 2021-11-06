@@ -26,7 +26,7 @@ function Register({ onRegister }) {
         if (localStorage.getItem('jwt')) {
           history.push('/');
         }
-    }, []);
+    }, [history]);
 
     function handlePasswordAdd(evt) {
         setPassword(evt.target.value);
@@ -55,15 +55,13 @@ function Register({ onRegister }) {
                     type="password"
                     placeholder="Пароль"
                     name="password"
-                    minLength="3" 
                     required
                     value={password}
                     onChange={handlePasswordAdd}
-                    minLength="3"
                 />
                 <button className="login-page__save-button">Зарегистрироваться</button>
             </form>
-            <p className="login-page__subtitle">Уже зарегистрированы? <Link to={"/sign-in"} className="login-page__subtitle login-page__link">Войти</Link></p>
+            <p className="login-page__subtitle">Уже зарегистрированы? <Link to={"/signin"} className="login-page__subtitle login-page__link">Войти</Link></p>
         </div>
     )
 }

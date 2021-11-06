@@ -1,28 +1,35 @@
+require('dotenv').config();
 const express = require('express');
-const cookieParser = require('cookie-parser');
 const mongoose = require('mongoose');
 const validator = require('validator');
 const { errors } = require('celebrate');
+const cors = require('cors');
 const { celebrate, Joi } = require('celebrate');
 const {
   createUser,
   login,
 } = require('./controllers/users');
-const { requestLogger, errorLogger } = require('./middlewares/logger');
 const NotFoundError = require('./errors/NotFoundError');
 const auth = require('./middlewares/auth');
+
+// const options = {
+//   origin: ['*'],
+//   methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
+//   preflightContinue: false,
+//   optionsSuccessStatus: 204,
+//   allowedHeaders: ['Content-Type', 'origin', 'Authorization'],
+//   credentials: true,
+// };
 
 const app = express();
 const PORT = 3000;
 
+app.use(cors());
 app.use(express.json());
-app.use(cookieParser());
 
 mongoose.connect('mongodb://localhost:27017/mestodb', {
   useNewUrlParser: true,
 });
-
-app.use(requestLogger);
 
 app.post('/signin', celebrate({
   body: Joi.object().keys({
@@ -55,13 +62,10 @@ app.use(() => {
   throw new NotFoundError('Страница не найдена');
 });
 
-app.use(errorLogger);
-
 app.use(errors());
 
 app.use((err, req, res, next) => {
   const { statusCode = 500, message } = err;
-
   res
     .status(statusCode)
     .send({
@@ -69,7 +73,6 @@ app.use((err, req, res, next) => {
         ? 'На сервере произошла ошибка'
         : message,
     });
-
   next();
 });
 

@@ -29,12 +29,12 @@ function Main({onEditAvatar, onEditProfile, onAddPlace, onCardClick, onCardLike,
                     <Card 
                         key={card._id} 
                         card={card} 
+                        onCardDelete={onCardDelite} 
                         onCardClick={onCardClick} 
                         onCardLike={onCardLike} 
-                        onCardDelete={onCardDelite} 
                     />
                    )
-                })}
+                }).reverse()}
             </section>
         </main> 
     );
